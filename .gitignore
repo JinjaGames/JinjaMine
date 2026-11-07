@@ -1,3 +1,17 @@
+# ---- JinjaMine ----
+# XMRig is never redistributed: users download it from the official GitHub page
+xmrig/
+# release builds go to GitHub Releases, not the repo
+dist/
+# local wallet backup and encrypted wallet files: never commit
+YEREL_CUZDAN_YEDEK*.txt
+*.bin
+# XMRig configs dumped by test/dump_cfg_test.dart
+app/buildcfg_*.json
+# IDE
+.idea/
+*.iml
+
 # Miscellaneous
 *.class
 *.lock

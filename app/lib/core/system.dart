@@ -109,7 +109,8 @@ Future<void> migrateLegacyData() async {
 }
 
 /// The JinjaMine project folder (holds xmrig\, docs\, dist\). Works whatever the folder is called:
-/// `PROJECT\dist\JinjaMine\JinjaMine.exe` -> `PROJECT`; otherwise Desktop\JinjaMine (or the old Desktop\mine).
+/// `PROJECT\dist\JinjaMine\JinjaMine.exe` -> `PROJECT`; otherwise Desktop\JinjaMine (or the old Desktop\mine);
+/// for a portable release unpacked anywhere else, the exe's own folder.
 Directory projectDir() {
   final exeDir = File(Platform.resolvedExecutable).parent;
   final dist = exeDir.parent;
@@ -119,7 +120,8 @@ Directory projectDir() {
     final d = Directory('$home\\Desktop\\$name');
     if (Directory('${d.path}\\xmrig').existsSync() || Directory('${d.path}\\docs').existsSync()) return d;
   }
-  return Directory('$home\\Desktop\\JinjaMine');
+  // portable release: the folder the exe was unpacked into
+  return exeDir;
 }
 
 /// Places where xmrig.exe is looked for automatically.
@@ -137,9 +139,12 @@ String? findXmrig() {
   for (final c in xmrigCandidates()) {
     if (File(c).existsSync()) return c;
   }
-  // also accept xmrig-6.x.y\xmrig.exe unpacked into the project's xmrig folder
-  final d = Directory('${projectDir().path}\\xmrig');
-  if (d.existsSync()) {
+  // also accept xmrig-6.x.y\xmrig.exe unpacked into an xmrig folder next to the
+  // exe (release zip) or in the project folder (source checkout)
+  final exeDir = File(Platform.resolvedExecutable).parent.path;
+  for (final root in {'$exeDir\\xmrig', '${projectDir().path}\\xmrig'}) {
+    final d = Directory(root);
+    if (!d.existsSync()) continue;
     for (final e in d.listSync(recursive: true)) {
       if (e is File && e.path.toLowerCase().endsWith('\\xmrig.exe')) return e.path;
     }
